@@ -1,0 +1,105 @@
+
+
+Página 2/13 AnteriorSiguiente
+Definición
+En la investigación de planificación de IA, la práctica de planificación (tal como se materializa en los sistemas de planificación implementados) tiende a ir muy por delante de las teorías que explican el comportamiento de esos sistemas. Existe un análisis muy reciente de las propiedades de los sistemas de planificación de orden total y parcial que utilizan operadores de planificación de estilo STRIPS. Los sistemas de planificación de estilo STRIPS, sin embargo, se desarrollaron hace más de veinte años y la mayor parte del trabajo práctico sobre sistemas de planificación de IA durante los últimos quince años se ha basado en la descomposición jerárquica de la red de tareas (HTN).
+La planificación de la red jerárquica de tareas (HTA) es una técnica de planificación de la IA que rompe con la tradición de la planificación (Ghallab, 2004). La idea básica detrás de esta técnica incluye:
+•	Una descripción de estado inicial,
+•	Una red de tareas inicial como un objetivo a alcanzar
+•	Y un conocimiento de dominio, que consiste en redes de tareas primitivas y compuestas.
+Una red de tareas representa una jerarquía de tareas, cada una de las cuales puede ejecutarse, si la tarea es primitiva, o ser descompuesta en subtareas refinadas.
+El proceso de planificación comienza descomponiendo la red de tarea inicial y continúa hasta que se descompongan todas las tareas compuestas, es decir, se encuentre una solución. La solución es un plan que equivale a un conjunto de tareas primitivas aplicables al estado mundial inicial.
+AnteriorSiguiente
+
+
+Página 3/13 AnteriorSiguiente
+Definición (II)
+Además de ser un factor que rompe la tradición, la planificación de la HTN también parece ser controvertida. La controversia radica en su requisito de conocimiento del dominio bien concebido y estructurado. Es probable que dicho conocimiento contenga abundante información y orientación sobre cómo resolver un problema de planificación, codificando así más la solución de lo que se previó para las técnicas de planificación clásicas. Este conocimiento estructurado y rico brinda una ventaja principal a los planificadores de HTN en términos de velocidad y escalabilidad cuando se aplica a problemas del mundo real y se compara con sus contrapartes en el mundo clásico (Georgievski, 2014).
+La mayor contribución hacia la planificación de HTN ha surgido después de la propuesta del planificador jerárquico simple (SHOP) (Nau D. S., 1999) y sus sucesores. SHOP es un planificador basado en HTN que muestra un rendimiento eficiente incluso en problemas complejos, pero a costa de proporcionar un conocimiento de dominio bien escrito y posiblemente algorítmico. La disputa sobre si proporcionar mucho conocimiento a un planificador debería considerarse una trampa en el mundo de la planificación de la inteligencia artificial sigue vigente (Nau D. S., 1999).
+AnteriorSiguiente
+
+
+Página 4/13 AnteriorSiguiente
+Planificación por medio de red de tareas
+Idea principal: muchas tareas en la vida real ya tienen una estructura jerárquica incorporada. Por ejemplo: una tarea computacional, una misión militar o una tarea administrativa.
+Sería una pérdida de tiempo construir planes desde los operadores individuales que forman las acciones propias del trabajo a realizar. Usar la jerarquía incorporada en el dominio ayuda a escapar de la explosión exponencial de las posibles combinaciones que tendrían las acciones atómicas.
+Ejemplo de aplicación: la actividad de construir una casa consiste en obtener los permisos necesarios, encontrar un constructor, construir el exterior/interior, etc. En el enfoque de las HTN, se utilizan operadores abstractos al igual que operadores primitivos durante la generación del plan.
+AnteriorSiguiente
+
+
+Página 5/13 AnteriorSiguiente
+Planificación por medio de red de tareas (II)
+ 
+Figura 1. Ejemplo de descomposición de tareas.
+Fuente: (Onder, 2020)
+AnteriorSiguiente
+v 
+
+Página 7/13 AnteriorSiguiente
+Descomposición jerárquica
+HTN es adecuado para dominios donde las tareas se organizan naturalmente en una jerarquía. Para construir estos modelos empleamos operadores abstractos para comenzar un plan. Utilizamos técnicas de planificación de orden parcial y descomposición de acciones para llegar al plan final.
+
+Una vez que hemos terminado de descomponer el plan, nos encontramos con un conjunto ordenado de operadores primitivos.
+
+No obstante, lo que debe considerarse primitivo es subjetivo: lo que un agente considera primitivo pueden ser los planes de otro agente. Por tanto, la descomposición de un plan puede derivar en acciones complejas que, desde el punto de vista del plan, son consideradas operadores primitivos pero que, a la hora de implementar las acciones finales, debamos descomponerlas en otras por medio de controladores que en la jerarquía del agente se encarguen de detallar esas acciones. Recordemos los primeros modelos sobre controladores apilados para tareas complejas.
+
+A la hora de descomponer las tareas tendremos una librería del plan que contendrá tanto las tareas primitivas como las que no lo son. Las no primitivas (o compuestas) tendrán un conjunto de precondiciones de ejecución y un conjunto de efectos producidos en el entorno.
+AnteriorSiguiente
+
+
+Página 8/13 AnteriorSiguiente
+Descomposición jerárquica (II)
+ 
+Figura 3. Ejemplo de descomposición de tareas.
+Fuente: (Onder, 2020).
+
+
+Pero podemos tener varias tareas que permitan construir un plan, como en la figura anterior. Por ejemplo, podríamos tener otra serie de tareas que nos permitan edificar una casa.
+AnteriorSiguiente
+
+
+Página 9/13 AnteriorSiguiente
+Descomposición jerárquica (III)
+ 
+Figura 4. Ejemplo de descomposición de tareas.
+Fuente: (Onder, 2020).
+
+
+Ambos conjuntos de tareas estarían a disposición del planificador para poder crear distintos planes, teniendo en cuenta que ambos medios de creación del plan tienen distintos efectos en el entorno (tener menos dinero o tener la espalda mal) al margen de obtener el efecto deseado (tener la casa).
+AnteriorSiguiente
+
+
+Página 10/13 AnteriorSiguiente
+Descomposición jerárquica (IV)
+Definición de las tareas
+Así, cuando definamos las tareas, tendremos que establecer dos elementos principales: las precondiciones necesarias que deben darse en el entorno para poder ejecutar una tarea y los efectos que se crean en el entorno.
+Por ejemplo:
+ 
+Figura 5. Ejemplo de precondiciones y efectos.
+Fuente: (Onder, 2020)
+AnteriorSiguiente
+
+
+Página 11/13 AnteriorSiguiente
+Descomposición jerárquica (V)
+Cuando tengamos que desarrollar un plan, descompondremos las tareas de modo que empleemos las acciones del sistema. Por ejemplo, para el primer caso tendríamos que la descomposición del plan se produce de la siguiente manera:
+Plan	Pasos (P1:GetPermit, P2: HireBuilder, P3: Construction, P4:PayBuilder)
+ 	Ordenación:	Inicio < P1 < P2 < P3 <P4 < Final
+Inicio < P2 < P3
+ 	Con las propiedades del estado que se desprenden de los distinto efectos.
+Tabla 1. Descomposición de un plan.
+De esta manera, podremos descomponer varios planes que empleen distintas acciones en distintos contextos para obtener planes posibles que resuelvan el problema.
+AnteriorSiguiente
+
+
+Página 13/13 AnteriorSiguiente
+Referencias bibliográficas
+Georgievski, I. y. (2014). An Overview of Hierarchical Task Network Planning.
+Groningen: Johann Bernoulli Institute for Mathematics and Computer Science University of Groningen. Obtenido de https://arxiv.org/pdf/1403.7426v1.pdf
+Ghallab, M. N. (2004). Automated Planning: theory and practice. San Francisco: Elsevier.
+Humphrey, T. (2015). Exploring HTN Planners through Example. Game AIPro 2, (pp. 149-167.
+Nau, D. S. (1999). SHOP: Simple Hierarchical Ordered Planner. IJCAI, (págs. 968-975).
+Nau, D. S. (2007). Current Trends in Automated Planning. AI Magazine, 28(4), 43-58.
+Onder, N. (. (09 de 05 de 2020). Computer Science Course. Obtenido de Michigan Technological University: https://pages.mtu.edu/~nilufer/classes/cs5811/2010-fall/lecture-slides-3e/cs5811-ch11b-htn
+AnteriorSiguiente
+
