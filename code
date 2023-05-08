@@ -1,0 +1,231 @@
+// Leer los datos del archivo JSON
+d3.json("https://gist.githubusercontent.com/Gisela0619/fffbccd6b818dde8a4c9724e00ee269a/raw/244c2b094169aacbb746b1b0ea7ec152f196630c/violencia.json").then(function(data) {
+  // Convertir las fechas de texto a objetos de fecha
+  var parseTime = d3.timeParse("%Y-%m-%d");
+  data.forEach(function(d) {
+    d.fecha = parseTime(d.fecha);
+  });
+  
+  // Agrupar los datos por año y mes
+  var nestedData = d3.nest()
+    .key(function(d) { return d.fecha.getFullYear(); }) // Agrupar por año
+    .key(function(d) { return d.fecha.getMonth(); }) // Luego por mes
+    .rollup(function(v) { return v.length; }) // Contar el número de incidentes por mes
+    .entries(data);
+  
+  // Crear una lista de años para el menú de selección
+  var years = nestedData.map(function(d) { return d.key; });
+  
+  // Crear el menú de selección de años
+  var select = d3.select("body")
+    .append("select")
+    .attr("id", "year-select")
+    .on("change", function() {
+      var selectedYear = d3.select(this).property("value");
+      var filteredData = nestedData.find(function(d) { return d.key == selectedYear; }).values; // Filtrar los datos por el año seleccionado
+      
+      // Agrupar los datos filtrados por mes y contar el número de incidentes
+      var nestedFilteredData = d3.nest()
+        .key(function(d) { return d.key; })
+        .rollup(function(v) { return d3.sum(v, function(d) { return d.value; }); })
+        .entries(filteredData);
+      
+      // Crear los datos para el gráfico de barras
+      var barData = nestedFilteredData.map(function(d) {
+        return {
+          month: d.key,
+          incidents: d.value
+        };
+      });
+      
+      // Configurar los márgenes y dimensiones del gráfico de barras
+      var margin = { top: 10, right: 30, bottom: 30, left: 60 };
+      var width = 600 - margin.left - margin.right;
+      var height = 400 - margin.top - margin.bottom;
+      
+      // Eliminar el gráfico anterior (si existe)
+      d3.select("#bar-chart").remove();
+      
+      // Crear un nuevo SVG para el gráfico de barras
+      var svg = d3.select("body")
+        .append("svg")
+        .attr("id", "bar-chart")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      
+      // Crear las escalas para los ejes x e y
+      var x = d3.scaleBand()
+        .range([0, width])
+        .domain(barData.map(function(d) { return d.month; }))
+        .padding(0.2);
+        
+          var y = d3.scaleLinear()
+    .range([height, 0])
+    .domain([0, d3.max(barData, function(d) { return d.value; })]);
+  
+  // Crear los ejes x e y
+  var xAxis = d3.axisBottom(x);
+  var yAxis = d3.axisLeft(y);
+  
+  // Agregar los ejes x e y al SVG
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+  
+  svg.append("g")
+    .call(yAxis);
+  
+  // Agregar las barras al SVG
+  svg.selectAll(".bar")
+    .data(barData)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.month); })
+      .attr("y", function(d) { return y(d.value); })
+      .attr("width", x.bandwidth())
+      .attr("height", function(d) { return height - y(d.value); });
+}
+
+// Agregar las opciones al select
+select.selectAll("option")
+.data(years)
+.enter().append("option")
+.attr("value", function(d) { return d; })
+.text(function(d) { return d; });
+
+// Agregar la leyenda
+svg.append("text")
+.attr("transform", "translate(" + (width/2) + "," + (height + margin.bottom) + ")")
+.style("text-anchor", "middle")
+.text("Mes");
+
+svg.append("text")
+.attr("transform", "rotate(-90)")
+.attr("y", 0 - margin.left)
+.attr("x", 0 - (height / 2))
+.attr("dy", "1em")
+.style("text-anchor", "middle")
+.text("Número de casos");
+
+// Función para actualizar el gráfico de barras cuando se selecciona un año
+function updateBarChart(selectedYear) {
+// Filtrar los datos para el año seleccionado
+var filteredData = nestedData.filter(function(d) {
+return d.key == selectedYear;
+})[0].values;
+
+// Actualizar el dominio de la escala x
+x.domain(filteredData.map(function(d) { return d.month; }));
+
+// Actualizar los ejes x e y
+xAxis.call(d3.axisBottom(x));
+yAxis.call(d3.axisLeft(y));
+
+// Actualizar las barras
+var bars = svg.selectAll(".bar")
+.data(filteredData);
+
+bars.enter().append("rect")
+.attr("class", "bar")
+.merge(bars)
+.transition()
+.duration(500)
+.attr("x", function(d) { return x(d.month); })
+.attr("y", function(d) { return y(d.count); })
+.attr("width", x.bandwidth())
+.attr("height", function(d) { return height - y(d.count); });
+
+bars.exit().remove();
+}
+
+// Inicializar el gráfico con los datos del primer año
+updateBarChart(years[0]);
+
+function updateBarChart(selectedYear) {
+  // Filtrar los datos por año seleccionado
+  var filteredData = nestedData.filter(function(d) {
+    return d.key === selectedYear;
+  })[0].values;
+
+  // Actualizar la escala del eje Y con los nuevos datos filtrados
+  y.domain([0, d3.max(filteredData, function(d) { return d.value; })]);
+
+  // Actualizar los elementos de la barra con los nuevos datos filtrados
+  var bars = svg.selectAll(".bar")
+    .data(filteredData);
+
+  // Eliminar las barras que no tienen datos correspondientes
+  bars.exit().remove();
+
+  // Agregar nuevas barras con datos correspondientes
+  bars.enter().append("rect")
+      .attr("class", "bar")
+      .attr("fill", "steelblue")
+      .attr("x", function(d) { return x(d.month); })
+      .attr("y", function(d) { return y(d.value); })
+      .attr("width", x.bandwidth())
+      .attr("height", function(d) { return height - y(d.value); })
+      .on("mouseover", function(d) {
+        tooltip.transition()
+          .duration(200)
+          .style("opacity", 0.9);
+        tooltip.html("Mes: " + d.month + "<br/>" + "Número de casos: " + d.value)
+          .style("left", (d3.event.pageX + 10) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+      })
+      .on("mouseout", function(d) {
+        tooltip.transition()
+          .duration(500)
+          .style("opacity", 0);
+      });
+
+  // Actualizar las barras existentes con datos correspondientes
+  bars.transition()
+    .duration(500)
+    .attr("x", function(d) { return x(d.month); })
+    .attr("y", function(d) { return y(d.value); })
+    .attr("width", x.bandwidth())
+    .attr("height", function(d) { return height - y(d.value); });
+
+  // Actualizar el eje X con los nuevos datos filtrados
+  xAxis.call(d3.axisBottom(x));
+
+// Actualizar el eje Y con los nuevos datos filtrados
+  yAxis.call(d3.axisLeft(y));
+
+  // Actualizar los rectángulos en el gráfico de barras
+  var bars = svg.selectAll(".bar")
+    .data(barData);
+
+  bars.enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.month); })
+      .attr("y", function(d) { return y(d.count); })
+      .attr("width", x.bandwidth())
+      .attr("height", function(d) { return height - y(d.count); })
+      .attr("fill", "steelblue");
+
+  bars.transition()
+      .duration(500)
+      .attr("x", function(d) { return x(d.month); })
+      .attr("y", function(d) { return y(d.count); })
+      .attr("width", x.bandwidth())
+      .attr("height", function(d) { return height - y(d.count); });
+
+  bars.exit().remove();
+}
+
+// Agregar las opciones al select
+select.selectAll("option")
+  .data(years)
+  .enter().append("option")
+    .attr("value", function(d) { return d; })
+    .text(function(d) { return d; });
+
+// Inicializar el gráfico con los datos del primer año
+updateBarChart(years[0]);
+
+
+
